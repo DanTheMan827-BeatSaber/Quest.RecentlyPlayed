@@ -1,6 +1,7 @@
 #include "main.hpp"
 #include "assets.hpp"
 #include "bsml/shared/Helpers/utilities.hpp"
+#include "System/Collections/Generic/List_1.hpp"
 
 static GlobalNamespace::SelectLevelCategoryViewController::LevelCategory historyCategorie = 5;
 
@@ -17,7 +18,7 @@ MAKE_HOOK_MATCH(SelectLevelCategoryViewControllerSetupHook, &GlobalNamespace::Se
         historyLevelCategoryInfo->categoryIcon = PNG_SPRITE(icon);
 
         // Extend allLevelCategoryinfos with our HistoryCategoryInfo
-        auto extendedLevelCategorieInfos = Array<GlobalNamespace::SelectLevelCategoryViewController::LevelCategoryInfo *>::NewLength(5);
+        auto extendedLevelCategorieInfos = ArrayW<GlobalNamespace::SelectLevelCategoryViewController::LevelCategoryInfo *>(5);
         // self->_allLevelCategoryInfos->CopyTo(extendedLevelCategorieInfos, 0);
         auto extendedLevelCategorieInfosW = ArrayW<GlobalNamespace::SelectLevelCategoryViewController::LevelCategoryInfo *>(extendedLevelCategorieInfos);
         self->_allLevelCategoryInfos.copy_to(extendedLevelCategorieInfosW, 0);
@@ -26,7 +27,7 @@ MAKE_HOOK_MATCH(SelectLevelCategoryViewControllerSetupHook, &GlobalNamespace::Se
     }
 
     // Extend EnabledCategories with our history category
-    auto extendedLevelCategories = Array<GlobalNamespace::SelectLevelCategoryViewController::LevelCategory>::NewLength(enabledLevelCategories.size() + 1);
+    auto extendedLevelCategories = ArrayW<GlobalNamespace::SelectLevelCategoryViewController::LevelCategory>(enabledLevelCategories.size() + 1);
     // enabledLevelCategories->CopyTo(extendedLevelCategories, 0);
     auto extendedLevelCategoriesW = ArrayW<GlobalNamespace::SelectLevelCategoryViewController::LevelCategory>(extendedLevelCategories);
     enabledLevelCategories.copy_to(extendedLevelCategoriesW, 0);
@@ -112,7 +113,7 @@ MAKE_HOOK_MATCH(LevelFilteringNavigationControllerUpdateSecondChildControllerCon
         {
             if(self->_beatmapLevelsModel)
             {
-                GlobalNamespace::BeatmapLevel* beatmapLevel = self->_beatmapLevelsModel->GetBeatmapLevel(levelid);
+                GlobalNamespace::BeatmapLevel* beatmapLevel = self->_beatmapLevelsModel->GetBeatmapLevel(levelid, false);
                 if (beatmapLevel)
                 {
                     historyLevelVector.push_back(beatmapLevel);
@@ -126,8 +127,8 @@ MAKE_HOOK_MATCH(LevelFilteringNavigationControllerUpdateSecondChildControllerCon
         auto historyLevelPack = SongCore::SongLoader::CustomLevelPack::New("custom_levelPack_HLP","Recently Played", historySprite);
         historyLevelPack->SetLevels(historyLevelVector);
         auto historyLevelPackList = System::Collections::Generic::List_1<GlobalNamespace::BeatmapLevelPack*>::New_ctor();
-        historyLevelPackList->Add(il2cpp_utils::cast<GlobalNamespace::BeatmapLevelPack>(historyLevelPack));
-        self->ShowPacksInSecondChildController(il2cpp_utils::cast<System::Collections::Generic::IReadOnlyList_1<GlobalNamespace::BeatmapLevelPack*>>(historyLevelPackList));
+        historyLevelPackList->Add(i2c::cast<GlobalNamespace::BeatmapLevelPack*>(historyLevelPack));
+        self->ShowPacksInSecondChildController(i2c::cast<System::Collections::Generic::IReadOnlyList_1<GlobalNamespace::BeatmapLevelPack*>*>(historyLevelPackList));
     }
     else
     {
@@ -194,7 +195,7 @@ extern "C" __attribute__((visibility("default"))) void setup(CModInfo* info)
 // Called later on in the game loading - a good time to install function hooks
 extern "C" __attribute__((visibility("default"))) void late_load()
 {
-    il2cpp_functions::Init();
+    i2c::functions::initialize();
 
     // Register our Settings
     BSML::Register::RegisterSettingsMenu("RecentlyPlayed", DidActivate, true);
